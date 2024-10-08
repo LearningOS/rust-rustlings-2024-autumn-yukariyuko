@@ -38,13 +38,12 @@ mod my_module {
             match command {
                 Command::Uppercase => output.push(string.to_uppercase()),
                 Command::Trim => output.push(string.trim().to_string()),
-                Command::Append(mut us) => {
-                    let mut s = String::from("");
-                    while us > 0   {
-                        s += "bar";
-                        us -= 1;
+                Command::Append(us) => {
+                    let mut s = String::from(*string);
+                    for _ in 0..*us {
+                        s.push_str("bar");
                     }
-                    output.push(string.to_string() + &s);
+                    output.push(s);
                 }
             }
         }
