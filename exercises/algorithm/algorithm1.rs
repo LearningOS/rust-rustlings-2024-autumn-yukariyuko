@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -23,19 +22,19 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T> {
+struct LinkedList<T: Ord + Clone> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Ord + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Ord + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,20 +68,45 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> LinkedList<T> {
+        let mut merged_list = LinkedList::new();
+
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+
+        while let (Some(a_node), Some(b_node)) = (current_a, current_b) {
+            let a_val = unsafe { &(*a_node.as_ptr()).val };
+            let b_val = unsafe { &(*b_node.as_ptr()).val };
+
+            if a_val <= b_val {
+                merged_list.add(a_val.clone());
+                current_a = unsafe { (*a_node.as_ptr()).next };
+            } else {
+                merged_list.add(b_val.clone());
+                current_b = unsafe { (*b_node.as_ptr()).next };
+            }
         }
-	}
+
+        while let Some(a_node) = current_a {
+            let a_val = unsafe { &(*a_node.as_ptr()).val };
+            merged_list.add(a_val.clone());
+            current_a = unsafe { (*a_node.as_ptr()).next };
+        }
+
+        while let Some(b_node) = current_b {
+            let b_val = unsafe { &(*b_node.as_ptr()).val };
+            merged_list.add(b_val.clone());
+            current_b = unsafe { (*b_node.as_ptr()).next };
+        }
+
+        merged_list
+    }
 }
 
 impl<T> Display for LinkedList<T>
 where
-    T: Display,
+    T: Display + Ord + Clone,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.start {
